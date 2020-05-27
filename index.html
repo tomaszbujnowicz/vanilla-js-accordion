@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>A dependency-free Vanilla JS accordion</title>
+</head>
+
+<body>
+
+  <style type="text/css">
+    /* Optional styling for demo purpose */
+    body {
+      max-width: 40em;
+      width: 88%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .houdini-heading {
+      margin: 0;
+      border-bottom: 1px #eee solid;
+    }
+    .houdini-content {
+      padding: 1rem 0;
+    }
+    .houdini-toggle:focus {
+      outline: none;
+    }
+
+    /* Required styling */
+    .houdini {
+      display: none;
+      height: 0;
+      opacity: 0;
+      overflow: hidden;
+      -webkit-transition: height 0.15s, opacity 0.15s;
+      transition: height 0.15s, opacity 0.15s;
+      will-change: height, opacity;   
+    }
+    .houdini.is-visible {
+      opacity: 1;
+    }
+    .houdini.is-expanded {
+      display: block;
+      height: auto;
+    }
+    .houdini[tabindex="-1"]:focus {
+      outline: none;
+    }
+    .houdini-heading .houdini-toggle {
+      background: inherit;
+      border: none;
+      display: block;
+      font: inherit;
+      padding: 10px 0;
+      text-align: inherit;
+      width: 100%;
+      position: relative;
+    }
+    .houdini-toggle-icon,
+    .houdini-toggle-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+    .houdini-toggle-icon {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      -webkit-transform: translateY(-50%);
+              transform: translateY(-50%);
+    }
+  </style>
+
+  <h1>
+    A dependency-free Vanilla JS accordion
+    <a href="https://github.com/tomaszbujnowicz/vanilla-js-accordion">GitHub repo</a>
+  </h1>
+
+  <div data-houdini-toggle="example1">
+    Headline 1
+  </div>
+  <div data-houdini-group="custom" id="example1">
+    <div class="houdini-content">
+      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Placeat autem, reiciendis sunt excepturi, eligendi commodi voluptatum magni impedit nam voluptates atque? Odio, praesentium. Doloribus vitae quisquam necessitatibus perspiciatis numquam vel?
+    </div>
+  </div>
+
+  <div data-houdini-toggle="example2">
+    Headline 2
+  </div>
+  <div data-houdini-group="custom" id="example2">
+    <div class="houdini-content">
+      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Alias eaque ea quod vel dignissimos neque aliquid tenetur, rerum sed doloribus recusandae nihil, ad pariatur tempore? Magni, et. Pariatur, corrupti labore!
+    </div>
+  </div>
+
+  <div data-houdini-toggle="example3">
+    Headline 3
+  </div>
+  <div data-houdini-group="custom" id="example3">
+    <div class="houdini-content">
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Unde sit officia quos rerum atque doloremque, in soluta necessitatibus esse delectus id nihil natus ducimus molestias voluptas non, culpa magnam debitis.
+      <br /><br>
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi nobis, vero ut quaerat commodi vitae excepturi distinctio provident quia? Illo laboriosam commodi, assumenda voluptatum ab reiciendis deserunt alias iste repudiandae!
+      </p>
+    </div>
+  </div>
+
+  <div data-houdini-toggle="example4">
+    Headline 4
+  </div>
+  <div data-houdini-group="custom" id="example4">
+    <div class="houdini-content">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio neque nulla, unde quisquam, asperiores molestias incidunt maxime, aspernatur maiores enim veritatis at? Veritatis fugiat iste nesciunt sint voluptatum aperiam ex.
+    </div>
+  </div>  
+
+  <script src="houdini.min.js"></script>
+
+  <script>
+
+    var accordion = function () {
+
+      // Houdini config
+      var config = {
+        isAccordion: true,
+        collapseOthers: true,
+        iconHide: '<svg height="24px" style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="512px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon points="396.6,352 416,331.3 256,160 96,331.3 115.3,352 256,201.5 "/></svg>',
+        iconShow: '<svg height="24px" style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="512px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon points="396.6,160 416,180.7 256,352 96,180.7 115.3,160 256,310.5 "/></svg>'
+      };
+
+      // Setup a timer
+      var timeout;
+
+      // Setup accordion
+      var accordion = null
+
+      // Define our viewportWidth variable
+      var viewportWidth;
+
+      // Set/update the viewportWidth value
+      var setViewportWidth = function () {
+        viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      }
+
+      // Init or destroy accordion
+      var initDestroyAccordion = function () {
+        if ( (viewportWidth < 768) || (viewportWidth > 1200) ) {
+          if (!accordion) {
+            // Init accordion
+            accordion = new Houdini('[data-houdini-group="custom"]', config);
+          }
+        } else {
+          if (accordion) {
+            // Destroy accordion
+            accordion.destroy();
+            accordion = null;
+          }
+        }
+      }      
+
+      // Set our initial width and init or destroy accordion
+      setViewportWidth();
+      initDestroyAccordion();
+
+      // On resize events, recalculate and log
+      window.addEventListener('resize', function ( event ) {
+        // If timer is null, reset it to 66ms and run your functions.
+        // Otherwise, wait until timer is cleared
+        if ( !timeout ) {
+          timeout = setTimeout(function() {
+            // Reset timeout
+            timeout = null;
+            // Run our resize functions
+            setViewportWidth();
+            initDestroyAccordion();
+          }, 66);
+        }
+      }, false);
+
+    };
+
+    accordion();
+
+  </script>	
+
+</body>
+</html>
